@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Users</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1>Пользователи воронки</h1>
+      <div class="navlinks">
+        <a href="/admin/dashboard?secret={{ secret }}">Дашборд</a>
+        <a href="/admin/users?secret={{ secret }}">Пользователи</a>
+      </div>
+    </div>
+
+    <form class="filters users-filters" method="get">
+      <input type="hidden" name="secret" value="{{ secret }}">
+      <input type="text" name="q" placeholder="Поиск: id / username / имя" value="{{ filters.q }}">
+      <select name="status">
+        <option value="">Все статусы</option>
+        {% for item in known_statuses %}
+        <option value="{{ item }}" {% if filters.status == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="source" placeholder="Источник" value="{{ filters.source }}">
+      <input type="text" name="created_from" placeholder="От даты ISO" value="{{ filters.created_from }}">
+      <input type="text" name="created_to" placeholder="До даты ISO" value="{{ filters.created_to }}">
+      <button type="submit">Применить</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Telegram</th>
+          <th>Имя</th>
+          <th>Статус</th>
+          <th>Этап</th>
+          <th>Урок</th>
+          <th>Источник</th>
+          <th>Анкета</th>
+          <th>Последний контакт</th>
+          <th>Создан</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td><a href="/admin/users/{{ user.id }}?secret={{ secret }}">{{ user.id }}</a></td>
+          <td>{{ user.telegram_id }}</td>
+          <td>{{ user.first_name or '' }} {% if user.username %}(@{{ user.username }}){% endif %}</td>
+          <td><span class="badge">{{ user.status }}</span></td>
+          <td>{{ user.current_stage }}</td>
+          <td>{{ user.current_lesson }}</td>
+          <td>{{ user.source or '' }}</td>
+          <td>
+            {% if user.application_submitted %}
+            submitted
+            {% elif user.application_opened %}
+            opened
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td>{{ user.last_interaction_at or '' }}</td>
+          <td>{{ user.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>User {{ user.id }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Пользователь #{{ user.id }}</h1>
+        <p class="muted">История, текущий этап и ручное управление.</p>
+      </div>
+      <div class="navlinks">
+        <a href="/admin/dashboard?secret={{ secret }}">Дашборд</a>
+        <a href="/admin/users?secret={{ secret }}">Пользователи</a>
+      </div>
+    </div>
+
+    <div class="grid-2 align-start">
+      <div class="card">
+        <h2>Профиль</h2>
+        <p><strong>Telegram:</strong> {{ user.telegram_id }}</p>
+        <p><strong>Имя:</strong> {{ user.first_name or '' }} {{ user.last_name or '' }} {% if user.username %}(@{{ user.username }}){% endif %}</p>
+        <p><strong>Статус:</strong> <span class="badge">{{ user.status }}</span></p>
+        <p><strong>Этап:</strong> {{ user.current_stage }}</p>
+        <p><strong>Текущий урок:</strong> {{ user.current_lesson }}</p>
+        <p><strong>Источник:</strong> {{ user.source or '' }}</p>
+        <p><strong>Заявка:</strong> opened={{ user.application_opened }} | submitted={{ user.application_submitted }}</p>
+        <p><strong>Остановлен:</strong> {{ user.unsubscribed }}</p>
+        <p><strong>Последняя активность:</strong> {{ user.last_interaction_at or '' }}</p>
+      </div>
+
+      <div class="card">
+        <h2>Действия</h2>
+        <form class="action-form" data-endpoint="/api/admin/users/{{ user.id }}/move-stage?secret={{ secret }}">
+          <label>Перевести на этап</label>
+          <div class="inline-form">
+            <select name="stage">
+              <option value="lesson_1">lesson_1</option>
+              <option value="lesson_2">lesson_2</option>
+              <option value="lesson_3">lesson_3</option>
+              <option value="application_offer">application_offer</option>
+              <option value="application_submitted">application_submitted</option>
+            </select>
+            <label class="checkbox"><input type="checkbox" name="send_message" checked> отправить сообщение</label>
+            <button type="submit">Применить</button>
+          </div>
+        </form>
+
+        <form class="action-form" data-endpoint="/api/admin/users/{{ user.id }}/manual-message?secret={{ secret }}">
+          <label>Отправить готовый дожим</label>
+          <div class="inline-form">
+            <select name="message_code">
+              <option value="">Выбери текст из воронки</option>
+              {% for code in message_codes %}
+              <option value="{{ code }}">{{ code }}</option>
+              {% endfor %}
+            </select>
+            <label class="checkbox"><input type="checkbox" name="with_application_button"> добавить кнопку анкеты</label>
+            <button type="submit">Отправить</button>
+          </div>
+        </form>
+
+        <form class="action-form" data-endpoint="/api/admin/users/{{ user.id }}/manual-message?secret={{ secret }}">
+          <label>Отправить свой текст</label>
+          <textarea name="text" rows="4" placeholder="Текст сообщения"></textarea>
+          <div class="inline-form">
+            <label class="checkbox"><input type="checkbox" name="with_application_button"> добавить кнопку анкеты</label>
+            <button type="submit">Отправить</button>
+          </div>
+        </form>
+
+        <div class="inline-form top-gap">
+          <button class="danger-button" onclick="postAction('/api/admin/users/{{ user.id }}/stop?secret={{ secret }}', {})">Остановить цепочку</button>
+          <button onclick="postAction('/api/applications/complete?secret={{ secret }}', {user_id: {{ user.id }}})">Отметить заявку</button>
+        </div>
+        <p id="action-status" class="muted"></p>
+      </div>
+    </div>
+
+    <h2>История событий</h2>
+    <div class="list">
+      {% for event in events %}
+      <div class="row">
+        <div class="row-head">
+          <strong>{{ event.event_type }}</strong>
+          <span>{{ event.stage or '-' }}</span>
+          <span>{{ event.created_at }}</span>
+        </div>
+        <pre>{{ event.payload }}</pre>
+      </div>
+      {% endfor %}
+    </div>
+
+    <h2>Задачи и дожимы</h2>
+    <div class="list">
+      {% for task in tasks %}
+      <div class="row">
+        <div class="row-head">
+          <strong>{{ task.task_type }}</strong>
+          <span class="badge">{{ task.status }}</span>
+          <span>{{ task.run_at }}</span>
+        </div>
+        <div class="muted small">{{ task.dedup_key }}</div>
+        <pre>{{ task.payload }}</pre>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    async function postAction(url, payload) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      });
+      document.getElementById('action-status').textContent = response.ok ? 'Действие выполнено' : 'Ошибка действия';
+    }
+
+    for (const form of document.querySelectorAll('.action-form')) {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(form).entries());
+        if ('send_message' in data) {
+          data.send_message = true;
+        } else if (form.querySelector('input[name="send_message"]')) {
+          data.send_message = false;
+        }
+        if ('with_application_button' in data) {
+          data.with_application_button = true;
+        } else if (form.querySelector('input[name="with_application_button"]')) {
+          data.with_application_button = false;
+        }
+        await postAction(form.dataset.endpoint, data);
+      });
+    }
+  </script>
+</body>
+</html>

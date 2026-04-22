@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Админ-панель воронки</h1>
+        <p class="muted">Контроль движения пользователей, конверсии и проблемных этапов.</p>
+      </div>
+      <div class="navlinks">
+        <a href="/admin/dashboard?secret={{ secret }}">Дашборд</a>
+        <a href="/admin/users?secret={{ secret }}">Пользователи</a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><span>Всего пользователей</span><strong>{{ total_users }}</strong></div>
+      <div class="stat-card"><span>1 урок</span><strong>{{ lesson_1_reached }}</strong></div>
+      <div class="stat-card"><span>2 урок</span><strong>{{ lesson_2_reached }}</strong></div>
+      <div class="stat-card"><span>3 урок</span><strong>{{ lesson_3_reached }}</strong></div>
+      <div class="stat-card"><span>Оффер увидели</span><strong>{{ offer_seen }}</strong></div>
+      <div class="stat-card accent"><span>Заявки</span><strong>{{ application_submitted }}</strong></div>
+    </div>
+
+    <div class="card">
+      <h2>Воронка</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Этап</th>
+            <th>Количество</th>
+            <th>Конверсия от старта</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in funnel_rows %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td>{{ row.count }}</td>
+            <td>{{ row.rate }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h2>Застряли до 2 урока</h2>
+        <div class="list compact">
+          {% for user in stuck_before_lesson_2 %}
+          <div class="row line-item">
+            <a href="/admin/users/{{ user.id }}?secret={{ secret }}">#{{ user.id }}</a>
+            <span>{{ user.first_name or user.username or user.telegram_id }}</span>
+            <span class="badge">{{ user.current_stage }}</span>
+          </div>
+          {% else %}
+          <p class="muted">Нет пользователей в этом сегменте.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Застряли до 3 урока</h2>
+        <div class="list compact">
+          {% for user in stuck_before_lesson_3 %}
+          <div class="row line-item">
+            <a href="/admin/users/{{ user.id }}?secret={{ secret }}">#{{ user.id }}</a>
+            <span>{{ user.first_name or user.username or user.telegram_id }}</span>
+            <span class="badge">{{ user.current_stage }}</span>
+          </div>
+          {% else %}
+          <p class="muted">Нет пользователей в этом сегменте.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Оффер без заявки</h2>
+        <div class="list compact">
+          {% for user in stuck_on_offer %}
+          <div class="row line-item">
+            <a href="/admin/users/{{ user.id }}?secret={{ secret }}">#{{ user.id }}</a>
+            <span>{{ user.first_name or user.username or user.telegram_id }}</span>
+            <span class="badge">{{ user.current_stage }}</span>
+          </div>
+          {% else %}
+          <p class="muted">Нет пользователей в этом сегменте.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Статусы пользователей</h2>
+        <div class="list compact">
+          {% for key, value in status_counts.items() %}
+          <div class="metric-row"><span>{{ key }}</span><strong>{{ value }}</strong></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Статусы задач</h2>
+        <div class="list compact">
+          {% for key, value in task_status_counts.items() %}
+          <div class="metric-row"><span>{{ key }}</span><strong>{{ value }}</strong></div>
+          {% else %}
+          <p class="muted">Пока задач нет.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Последние события</h2>
+      <div class="list">
+        {% for item in recent_events %}
+        <div class="row">
+          <div class="row-head">
+            <strong>{{ item.event.event_type }}</strong>
+            <span>{{ item.event.stage or '-' }}</span>
+            <span>{{ item.event.created_at }}</span>
+          </div>
+          <div class="muted small">
+            {% if item.user %}
+            Пользователь: <a href="/admin/users/{{ item.user.id }}?secret={{ secret }}">#{{ item.user.id }}</a>
+            {% else %}
+            Пользователь: #{{ item.event.user_id }}
+            {% endif %}
+          </div>
+          <pre>{{ item.event.payload }}</pre>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
