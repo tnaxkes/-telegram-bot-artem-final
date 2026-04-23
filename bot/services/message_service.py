@@ -66,7 +66,7 @@ class MessageService:
         image_file_id = None
         if step.metadata:
             image_file_id = step.metadata.get('image_file_id') or step.metadata.get('photo')
-        if image_file_id and step.code == 'lesson_1' and text:
+        if image_file_id and step.code in {'lesson_1', 'lesson_2'} and text:
             await self._send_photo_by_id(
                 chat_id=chat_id,
                 photo_id=str(image_file_id),
