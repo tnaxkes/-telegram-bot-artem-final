@@ -44,7 +44,12 @@ class MessageService:
                 await self.bot.send_video_note(chat_id=chat_id, video_note=file_id)
                 sent_video_note = True
             except Exception as exc:
-                logger.warning('Failed to send video note, falling back to image/text: %s', exc)
+                logger.exception(
+                    'Failed to send start video note. chat_id=%s video_note_file_id=%s error=%s',
+                    chat_id,
+                    file_id,
+                    exc,
+                )
 
         await self._send_photo_by_id(
             chat_id=chat_id,
