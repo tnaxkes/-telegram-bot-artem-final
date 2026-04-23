@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 START_VIDEO_NOTE_FILE_ID = 'DQACAgIAAxkBAAIBhWnpmmxR5qu56BBGJNJ5MKZY-He_AAJTnQACK7YIS--c7EpIOUk5OwQ'
 START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfWnpmc4Tjkn9HGQqfqEW79jZPJ93AALbFmsbvUFJS1O2t6nwc_N8AQADAgADeQADOwQ'
 LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfmnpmc6EzfmBYS-UDKZShxvpyRrvAALcFmsbvUFJSzmJ-N5TlpfJAQADAgADeQADOwQ'
+LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ'
 
 
 class MessageService:
@@ -67,6 +68,8 @@ class MessageService:
         image_file_id = None
         if step.code in {'lesson_1', 'lesson_2'}:
             image_file_id = LESSON_SHARED_IMAGE_FILE_ID
+        elif step.code == 'lesson_3':
+            image_file_id = LESSON_3_IMAGE_FILE_ID
         if step.metadata:
             image_file_id = image_file_id or step.metadata.get('image_file_id') or step.metadata.get('photo')
         if image_file_id:
