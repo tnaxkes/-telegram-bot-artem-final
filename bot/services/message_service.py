@@ -38,28 +38,23 @@ class MessageService:
         fallback_text: str | None,
         reply_markup: InlineKeyboardMarkup | None = None,
     ) -> None:
+        sent_video_note = False
         if file_id:
             try:
                 await self.bot.send_video_note(chat_id=chat_id, video_note=file_id)
-                await self._send_photo_by_id(
-                    chat_id=chat_id,
-                    photo_id=START_IMAGE_FILE_ID,
-                    caption=fallback_text,
-                    reply_markup=reply_markup,
-                )
-                if fallback_text:
-                    return
-                return
+                sent_video_note = True
             except Exception as exc:
                 logger.warning('Failed to send video note, falling back to image/text: %s', exc)
+
         await self._send_photo_by_id(
             chat_id=chat_id,
             photo_id=START_IMAGE_FILE_ID,
             caption=fallback_text,
             reply_markup=reply_markup,
         )
-        if fallback_text:
-            return
+
+        if file_id and not sent_video_note:
+            logger.warning('Start video note was not sent, only start photo screen was delivered.')
 
     async def send_step(self, chat_id: int, step: FunnelStep, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         text = step.body if not step.title else f'{step.title}\n\n{step.body}'
