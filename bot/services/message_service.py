@@ -6,6 +6,7 @@ from bot.models.content import FunnelStep
 
 
 logger = logging.getLogger(__name__)
+START_VIDEO_NOTE_FILE_ID = 'DQACAgIAAxkBAAIBhWnpmmxR5qu56BBGJNJ5MKZY-He_AAJTnQACK7YIS--c7EpIOUk5OwQ'
 START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfWnpmc4Tjkn9HGQqfqEW79jZPJ93AALbFmsbvUFJS1O2t6nwc_N8AQADAgADeQADOwQ'
 
 
@@ -38,16 +39,18 @@ class MessageService:
         fallback_text: str | None,
         reply_markup: InlineKeyboardMarkup | None = None,
     ) -> None:
-        sent_video_note = False
-        if file_id:
+        start_video_note_id = file_id or START_VIDEO_NOTE_FILE_ID
+        if start_video_note_id:
             try:
-                await self.bot.send_video_note(chat_id=chat_id, video_note=file_id)
-                sent_video_note = True
+                await self.bot.send_video_note(
+                    chat_id=chat_id,
+                    video_note=start_video_note_id,
+                )
             except Exception as exc:
                 logger.exception(
                     'Failed to send start video note. chat_id=%s video_note_file_id=%s error=%s',
                     chat_id,
-                    file_id,
+                    start_video_note_id,
                     exc,
                 )
 
@@ -57,9 +60,6 @@ class MessageService:
             caption=fallback_text,
             reply_markup=reply_markup,
         )
-
-        if file_id and not sent_video_note:
-            logger.warning('Start video note was not sent, only start photo screen was delivered.')
 
     async def send_step(self, chat_id: int, step: FunnelStep, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         text = step.body if not step.title else f'{step.title}\n\n{step.body}'
