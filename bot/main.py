@@ -1,10 +1,11 @@
 import logging
 
 from telegram import BotCommand
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 
 from bot.handlers.callbacks import callback_router
 from bot.handlers.commands import manager_command, start_command, stop_command, submit_application_command
+from bot.handlers.debug import log_incoming_file_ids
 from bot.repositories.event_repository import EventRepository
 from bot.repositories.task_repository import TaskRepository
 from bot.scheduler.tasks import run_scheduled_task
@@ -41,6 +42,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler('stop', stop_command))
     application.add_handler(CommandHandler('submit_application', submit_application_command))
     application.add_handler(CallbackQueryHandler(callback_router))
+    application.add_handler(MessageHandler(filters.ALL, log_incoming_file_ids), group=1)
 
     logger.info('Starting Telegram bot polling in local mode')
     application.run_polling(drop_pending_updates=False)
