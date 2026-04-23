@@ -1,4 +1,4 @@
-start_video_file_id: "DQACAgIAAxkBAAFH1Kxp6QYzX3l_vAh-RYv8Rq9q_ParLQACU50AAiu2CEt8yzWa2Z6E2jsE"
+start_video_file_id: "DQACAgIAAxkBAAIBhWnpmmxR5qu56BBGJNJ5MKZY-He_AAJTnQACK7YIS-c7EpIOUk5OwQ"
 start_video_text: |
   Скажу сразу 👇
 
@@ -58,7 +58,7 @@ steps:
       👇 ниже выбери удобную платформу и начни просмотр
     metadata:
       direct_links: true
-      image_path: /Users/grigory/Downloads/photo_2026-04-22 19.17.49.jpeg
+      image_file_id: AgACAgIAAxkBAAIBfmnpmc6EzfmBYS-UDKZShxvpyRrvAALcFmsbvUFJSzmJ-N5TlpfJAQADAgADeQADOwQ
     platforms:
       - label: YouTube
         platform: youtube
@@ -98,7 +98,7 @@ steps:
       интенсив может скоро удалиться,
       не откладывай просмотр
     metadata:
-      image_path: /Users/grigory/Downloads/photo_2026-04-22 19.29.02.jpeg
+      image_file_id: AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ
     platforms:
       - label: YouTube
         platform: youtube
@@ -141,7 +141,7 @@ steps:
       👇 выбери удобную платформу и досмотри до конца
     metadata:
       direct_links: true
-      image_path: /Users/grigory/Downloads/photo_2026-04-22 19.37.36.jpeg
+      image_file_id: AgACAgIAAxkBAAIBgWnpmc7MXz8knqtflpa2IpfgX9ADAALeFmsbvUFJS-nuRTJzi-z7AQADAgADeQADOwQ
     platforms:
       - label: YouTube
         platform: youtube
@@ -187,7 +187,7 @@ steps:
 
       если заполнил(а) анкету — пиши мне в лс (@yurow_work) слово «гайд» и мы с командой отправим тебе файл.
     metadata:
-      image_path: /Users/grigory/Downloads/photo_2026-04-22 19.56.48.jpeg
+      image_file_id: AgACAgIAAxkBAAIBgWnpmc7MXz8knqtflpa2IpfgX9ADAALeFmsbvUFJS-nuRTJzi-z7AQADAgADeQADOwQ
     cta_text: хочу зарабатывать
     cta_callback: open_application
 followup_texts:
