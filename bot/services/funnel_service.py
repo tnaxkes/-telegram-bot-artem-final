@@ -95,6 +95,8 @@ class FunnelService:
             await self.message_service.send_lesson_3_nudge_1_photo(user.telegram_id, text, reply_markup)
         elif message_code == 'lesson_3_nudge_2':
             await self.message_service.send_lesson_3_nudge_2_video(user.telegram_id, text, reply_markup)
+        elif message_code == 'lesson_3_nudge_3':
+            await self.message_service.send_lesson_3_nudge_3_photo(user.telegram_id, text, reply_markup)
         else:
             await self.message_service.send_text(user.telegram_id, text, reply_markup)
         if message_code == 'lesson_1_followup' and application is not None:
