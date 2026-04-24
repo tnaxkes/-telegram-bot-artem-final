@@ -110,10 +110,19 @@ class MessageService:
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
 
     async def send_lesson_2_nudge_2_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
-        await self.bot.send_photo(
-            chat_id=chat_id,
-            photo=LESSON_2_NUDGE_2_PHOTO_FILE_ID,
-            caption=caption,
-            reply_markup=reply_markup,
-            parse_mode='HTML',
-        )
+        try:
+            await self.bot.send_photo(
+                chat_id=chat_id,
+                photo=LESSON_2_NUDGE_2_PHOTO_FILE_ID,
+                caption=caption,
+                reply_markup=reply_markup,
+                parse_mode='HTML',
+            )
+        except Exception as exc:
+            logger.exception(
+                'Failed to send lesson_2_nudge_2 photo. chat_id=%s photo_file_id=%s error=%s',
+                chat_id,
+                LESSON_2_NUDGE_2_PHOTO_FILE_ID,
+                exc,
+            )
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
