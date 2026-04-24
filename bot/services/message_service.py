@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from telegram import Bot, InlineKeyboardMarkup
 
@@ -54,6 +55,7 @@ class MessageService:
                     chat_id=chat_id,
                     video_note=start_video_note_id,
                 )
+                await asyncio.sleep(3)
             except Exception as exc:
                 logger.exception(
                     'Failed to send start video note. chat_id=%s video_note_file_id=%s error=%s',

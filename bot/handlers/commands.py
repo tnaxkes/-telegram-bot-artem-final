@@ -1,3 +1,5 @@
+import asyncio
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -32,6 +34,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             await event_repository.create(user.id, EventType.USER_CREATED.value, stage='start', payload={'source': source})
         await funnel_service.scheduler_service.cancel_tasks_for_user(user.id)
         await funnel_service.send_start(user)
+        await asyncio.sleep(5)
         await funnel_service.start_funnel(user, context.application)
         await session.commit()
 

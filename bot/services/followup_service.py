@@ -38,19 +38,21 @@ class FollowupService:
         schedule_batch = int(datetime.now(timezone.utc).timestamp())
         if lesson_number == 2:
             codes = ['lesson_2_nudge_1', 'lesson_2_nudge_2', 'lesson_2_nudge_3']
+            delays = [360, 1560, 3600]
         elif lesson_number == 3:
             codes = ['lesson_3_nudge_1', 'lesson_3_nudge_2', 'lesson_3_nudge_3']
+            delays = [360, 1560, 3600]
         else:
             return
 
-        for index, code in enumerate(codes, start=1):
+        for code, delay_seconds in zip(codes, delays, strict=True):
             dedup_key = f'user:{user.id}:task:{code}:batch:{schedule_batch}'
             await self.scheduler_service.schedule_task(
                 application=application,
                 user=user,
                 task_type=TaskType.LESSON_FOLLOWUP,
                 dedup_key=dedup_key,
-                run_at=self.scheduler_service.run_at_after(10 * index),
+                run_at=self.scheduler_service.run_at_after(delay_seconds),
                 payload={
                     'message_code': code,
                     'next_step': f'lesson_{lesson_number}',
