@@ -92,11 +92,24 @@ class MessageService:
             logger.warning('Missing followup video asset: %s', LESSON_2_NUDGE_1_VIDEO_PATH)
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
             return
-        with LESSON_2_NUDGE_1_VIDEO_PATH.open('rb') as video_file:
-            await self.bot.send_video(
-                chat_id=chat_id,
-                video=video_file,
-                caption=caption,
-                reply_markup=reply_markup,
-                parse_mode='HTML',
+        try:
+            with LESSON_2_NUDGE_1_VIDEO_PATH.open('rb') as video_file:
+                await self.bot.send_video(
+                    chat_id=chat_id,
+                    video=video_file,
+                    caption=caption,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML',
+                    write_timeout=12,
+                    read_timeout=20,
+                    connect_timeout=10,
+                    pool_timeout=10,
+                )
+        except Exception as exc:
+            logger.exception(
+                'Failed to send lesson_2_nudge_1 video. chat_id=%s video_path=%s error=%s',
+                chat_id,
+                LESSON_2_NUDGE_1_VIDEO_PATH,
+                exc,
             )
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
