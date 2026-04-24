@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from telegram import Bot, InlineKeyboardMarkup
 
@@ -11,7 +10,7 @@ START_VIDEO_NOTE_FILE_ID = 'DQACAgIAAxkBAAIBhWnpmmxR5qu56BBGJNJ5MKZY-He_AAJTnQAC
 START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfWnpmc4Tjkn9HGQqfqEW79jZPJ93AALbFmsbvUFJS1O2t6nwc_N8AQADAgADeQADOwQ'
 LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfmnpmc6EzfmBYS-UDKZShxvpyRrvAALcFmsbvUFJSzmJ-N5TlpfJAQADAgADeQADOwQ'
 LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ'
-LESSON_2_NUDGE_1_VIDEO_PATH = Path('bot/assets/lesson_2_nudge_1_single.mp4')
+LESSON_2_NUDGE_1_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFH8Ndp6uthRCOihuaFx6xBxr11nbsP2QACO50AAknbWUsrKtpGJFRdmDsE'
 
 
 class MessageService:
@@ -88,28 +87,19 @@ class MessageService:
         await self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
     async def send_lesson_2_nudge_1_video(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
-        if not LESSON_2_NUDGE_1_VIDEO_PATH.exists():
-            logger.warning('Missing followup video asset: %s', LESSON_2_NUDGE_1_VIDEO_PATH)
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
-            return
         try:
-            with LESSON_2_NUDGE_1_VIDEO_PATH.open('rb') as video_file:
-                await self.bot.send_video(
-                    chat_id=chat_id,
-                    video=video_file,
-                    caption=caption,
-                    reply_markup=reply_markup,
-                    parse_mode='HTML',
-                    write_timeout=12,
-                    read_timeout=20,
-                    connect_timeout=10,
-                    pool_timeout=10,
-                )
+            await self.bot.send_video(
+                chat_id=chat_id,
+                video=LESSON_2_NUDGE_1_VIDEO_FILE_ID,
+                caption=caption,
+                reply_markup=reply_markup,
+                parse_mode='HTML',
+            )
         except Exception as exc:
             logger.exception(
-                'Failed to send lesson_2_nudge_1 video. chat_id=%s video_path=%s error=%s',
+                'Failed to send lesson_2_nudge_1 video. chat_id=%s video_file_id=%s error=%s',
                 chat_id,
-                LESSON_2_NUDGE_1_VIDEO_PATH,
+                LESSON_2_NUDGE_1_VIDEO_FILE_ID,
                 exc,
             )
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
