@@ -13,6 +13,8 @@ LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvU
 LESSON_2_NUDGE_1_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFH8Ndp6uthRCOihuaFx6xBxr11nbsP2QACO50AAknbWUsrKtpGJFRdmDsE'
 LESSON_2_NUDGE_2_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFH-dZp63aThou9RLX9azZkF8ZRpLOFJQACuhNrG0nbYUu0rHr3VIdxjQEAAwIAA3gAAzsE'
 LESSON_2_NUDGE_3_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFH-fpp63gyDFB737FpP5fcn-z7_gIjkgACxxNrG0nbYUuc4vQUNDHgOgEAAwIAA3kAAzsE'
+LESSON_3_NUDGE_1_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFH-u1p64DDUCFuWhSQv1ASJFJ1duGuHwAC9RNrG0nbYUsIzOEF4jSFAgEAAwIAA3kAAzsE'
+LESSON_3_NUDGE_2_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFH-v9p64IepE_XTEKTpVyWgy92BZUOEAACqaIAAknbYUuftJ9afKN8MTsE'
 
 
 class MessageService:
@@ -142,6 +144,46 @@ class MessageService:
                 'Failed to send lesson_2_nudge_3 photo. chat_id=%s photo_file_id=%s error=%s',
                 chat_id,
                 LESSON_2_NUDGE_3_PHOTO_FILE_ID,
+                exc,
+            )
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+
+    async def send_lesson_3_nudge_1_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
+        try:
+            await self.bot.send_photo(
+                chat_id=chat_id,
+                photo=LESSON_3_NUDGE_1_PHOTO_FILE_ID,
+                caption=caption,
+                reply_markup=reply_markup,
+                parse_mode='HTML',
+            )
+        except Exception as exc:
+            logger.exception(
+                'Failed to send lesson_3_nudge_1 photo. chat_id=%s photo_file_id=%s error=%s',
+                chat_id,
+                LESSON_3_NUDGE_1_PHOTO_FILE_ID,
+                exc,
+            )
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+
+    async def send_lesson_3_nudge_2_video(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
+        try:
+            await self.bot.send_video(
+                chat_id=chat_id,
+                video=LESSON_3_NUDGE_2_VIDEO_FILE_ID,
+                caption=caption,
+                reply_markup=reply_markup,
+                parse_mode='HTML',
+                write_timeout=8,
+                read_timeout=12,
+                connect_timeout=6,
+                pool_timeout=6,
+            )
+        except Exception as exc:
+            logger.exception(
+                'Failed to send lesson_3_nudge_2 video. chat_id=%s video_file_id=%s error=%s',
+                chat_id,
+                LESSON_3_NUDGE_2_VIDEO_FILE_ID,
                 exc,
             )
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
