@@ -50,7 +50,7 @@ class FollowupService:
                 user=user,
                 task_type=TaskType.LESSON_FOLLOWUP,
                 dedup_key=dedup_key,
-                run_at=self.scheduler_service.run_at_after(20 * index),
+                run_at=self.scheduler_service.run_at_after(10 * index),
                 payload={
                     'message_code': code,
                     'next_step': f'lesson_{lesson_number}',

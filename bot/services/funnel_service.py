@@ -87,6 +87,8 @@ class FunnelService:
             reply_markup = build_application_keyboard(self.funnel.steps['application_offer'].cta_text or 'хочу зарабатывать')
         if message_code == 'lesson_2_nudge_1':
             await self.message_service.send_lesson_2_nudge_1_video(user.telegram_id, text, reply_markup)
+        elif message_code == 'lesson_2_nudge_2':
+            await self.message_service.send_lesson_2_nudge_2_photos(user.telegram_id, text, reply_markup)
         else:
             await self.message_service.send_text(user.telegram_id, text, reply_markup)
         if message_code == 'lesson_1_followup' and application is not None:
