@@ -11,8 +11,7 @@ START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfWnpmc4Tjkn9HGQqfqEW79jZPJ93AALbFmsbvUFJS
 LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfmnpmc6EzfmBYS-UDKZShxvpyRrvAALcFmsbvUFJSzmJ-N5TlpfJAQADAgADeQADOwQ'
 LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ'
 LESSON_2_NUDGE_1_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFH8Ndp6uthRCOihuaFx6xBxr11nbsP2QACO50AAknbWUsrKtpGJFRdmDsE'
-LESSON_2_NUDGE_2_PHOTO_1_FILE_ID = 'AgACAgIAAxkBAAFH8RVp6u_Y5En1h23OK7kmtLXozzDCnAACXxprGyQVWEvwSO9Rmcq3ZQEAAwIAA3kAAzsE'
-LESSON_2_NUDGE_2_PHOTO_2_FILE_ID = 'AgACAgIAAxkBAAFH8Rdp6u_jx7le2pbF9-nLKrP_c9pjHwACYBprGyQVWEuLO_LZyqu_IwEAAwIAA3kAAzsE'
+LESSON_2_NUDGE_2_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFH-Y5p63Qkvd0Wt6Gj_9xx1IeEMC_cQAACWBNrG9zAYEvB6Lkusk8bTwEAAwIAA3gAAzsE'
 
 
 class MessageService:
@@ -110,15 +109,11 @@ class MessageService:
             )
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
 
-    async def send_lesson_2_nudge_2_photos(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
+    async def send_lesson_2_nudge_2_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         await self.bot.send_photo(
             chat_id=chat_id,
-            photo=LESSON_2_NUDGE_2_PHOTO_1_FILE_ID,
+            photo=LESSON_2_NUDGE_2_PHOTO_FILE_ID,
             caption=caption,
             reply_markup=reply_markup,
             parse_mode='HTML',
-        )
-        await self.bot.send_photo(
-            chat_id=chat_id,
-            photo=LESSON_2_NUDGE_2_PHOTO_2_FILE_ID,
         )
