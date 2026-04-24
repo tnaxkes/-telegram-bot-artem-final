@@ -89,7 +89,12 @@ class MessageService:
         await self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
     async def send_text(self, chat_id: int, text: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
-        await self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+        await self.bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='HTML',
+        )
 
     async def send_lesson_2_nudge_1_video(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
