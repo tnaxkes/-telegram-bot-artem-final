@@ -34,3 +34,8 @@ class FunnelConfig(BaseModel):
     followup_texts: dict[str, str]
     application_followups: list[DelayConfig]
     application_buttons: list[PlatformLink] = Field(default_factory=list)
+
+
+class LeadBroadcastConfig(BaseModel):
+    noon_message: str = ''
+    evening_message: str = ''

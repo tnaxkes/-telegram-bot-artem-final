@@ -7,6 +7,7 @@ from bot.handlers.callbacks import callback_router
 from bot.handlers.commands import manager_command, start_command, stop_command, submit_application_command
 from bot.repositories.event_repository import EventRepository
 from bot.repositories.task_repository import TaskRepository
+from bot.services.lead_broadcast_service import LeadBroadcastService
 from bot.scheduler.tasks import run_scheduled_task
 from bot.services.scheduler_service import SchedulerService
 from config.database import AsyncSessionLocal, init_db
@@ -24,6 +25,7 @@ async def post_init(application: Application) -> None:
         BotCommand('manager', 'Связь с менеджером'),
     ])
     application.bot_data['scheduled_task_callback'] = run_scheduled_task
+    LeadBroadcastService().schedule_jobs(application)
     async with AsyncSessionLocal() as session:
         scheduler = SchedulerService(TaskRepository(session), EventRepository(session))
         count = await scheduler.recover_pending_tasks(application)

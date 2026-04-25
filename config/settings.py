@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     application_url: str = Field(default='https://example.invalid/application-disabled', alias='APPLICATION_URL')
     admin_secret: str = Field(default='my-super-secret-admin-key-2026', alias='ADMIN_SECRET')
     log_level: str = Field(default='INFO', alias='LOG_LEVEL')
+    google_sheet_id: str | None = Field(default=None, alias='GOOGLE_SHEET_ID')
+    google_service_account_json: str | None = Field(default=None, alias='GOOGLE_SERVICE_ACCOUNT_JSON')
+
+    @field_validator('google_sheet_id', 'google_service_account_json', mode='before')
+    @classmethod
+    def normalize_optional_env(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
 
 
 @lru_cache(maxsize=1)

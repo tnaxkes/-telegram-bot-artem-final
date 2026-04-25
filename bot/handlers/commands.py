@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -8,7 +9,11 @@ from bot.repositories.event_repository import EventRepository
 from bot.repositories.task_repository import TaskRepository
 from bot.repositories.user_repository import UserRepository
 from bot.services.funnel_service import FunnelService
+from bot.services.google_sheets_service import GoogleSheetsLeadService
 from config.database import AsyncSessionLocal
+
+
+logger = logging.getLogger(__name__)
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -37,6 +42,15 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await asyncio.sleep(5)
         await funnel_service.start_funnel(user, context.application)
         await session.commit()
+
+    google_sheets_service = GoogleSheetsLeadService()
+    try:
+        await google_sheets_service.ensure_chat_id_exists(update.effective_user.id)
+    except Exception:
+        logger.exception(
+            'Failed to save lead to Google Sheets. telegram_id=%s',
+            update.effective_user.id,
+        )
 
 
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
