@@ -20,6 +20,7 @@ from bot.services.event_service import EventService
 from bot.services.followup_service import FollowupService
 from bot.services.message_service import MessageService
 from bot.services.scheduler_service import SchedulerService
+from config.settings import get_settings
 
 
 class FunnelService:
@@ -33,6 +34,7 @@ class FunnelService:
         self.followup_service = FollowupService(self.scheduler_service)
         self.message_service = MessageService(bot)
         self.funnel = get_funnel_config()
+        self.settings = get_settings()
 
     async def send_start(self, user: User) -> None:
         step = self.funnel.steps['start']
@@ -122,7 +124,7 @@ class FunnelService:
         await self.user_repository.mark_application_opened(user)
         await self.scheduler_service.cancel_tasks_for_user(user.id, TaskType.APPLICATION_FOLLOWUP)
         await self.event_service.log(user.id, EventType.APPLICATION_OPENED, stage='application_offer')
-        url = self.funnel.application_buttons[0].url if self.funnel.application_buttons else 'https://example.com'
+        url = self.funnel.application_buttons[0].url if self.funnel.application_buttons else self.settings.application_url
         await self.message_service.send_text(
             user.telegram_id,
             'Анкета ниже. Если тебе это реально нужно — заполни сейчас.',

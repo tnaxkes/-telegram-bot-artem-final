@@ -91,13 +91,13 @@ steps:
     platforms:
       - label: YouTube
         platform: youtube
-        url: https://youtube.com
+        url: https://www.youtube.com/watch?v=_9kQplnBJp4
       - label: VK
         platform: vk
-        url: https://vk.com
+        url: https://vkvideo.ru/video-230205270_456239043
       - label: RuTube
         platform: rutube
-        url: https://rutube.ru
+        url: https://rutube.ru/video/3f53764475389258c000f9f3f9cbb9de/
     followups:
       - code: lesson_2_followup
         delay_seconds: 60
@@ -470,4 +470,4 @@ application_followups:
 application_buttons:
   - label: Заполнить анкету
     platform: application
-    url: https://example.com
+    url: https://docs.google.com/forms/d/e/1FAIpQLSd5A2QdSvPImL0I5etX1JRAuOMq5y_ah_Go05gIclFQ6tOsQg/viewform

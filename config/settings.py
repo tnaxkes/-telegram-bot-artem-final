@@ -19,7 +19,10 @@ class Settings(BaseSettings):
     bot_token: str = Field(alias='BOT_TOKEN')
     database_url: str = Field(default='sqlite+aiosqlite:///./data/bot.db', alias='DATABASE_URL')
     timezone: str = Field(default='Europe/Moscow', alias='TIMEZONE')
-    application_url: str = Field(default='https://example.invalid/application-disabled', alias='APPLICATION_URL')
+    application_url: str = Field(
+        default='https://docs.google.com/forms/d/e/1FAIpQLSd5A2QdSvPImL0I5etX1JRAuOMq5y_ah_Go05gIclFQ6tOsQg/viewform',
+        alias='APPLICATION_URL',
+    )
     admin_secret: str = Field(default='my-super-secret-admin-key-2026', alias='ADMIN_SECRET')
     log_level: str = Field(default='INFO', alias='LOG_LEVEL')
     google_sheet_id: str | None = Field(default=None, alias='GOOGLE_SHEET_ID')
