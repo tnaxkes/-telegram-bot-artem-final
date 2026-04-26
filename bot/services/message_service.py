@@ -8,8 +8,8 @@ from bot.models.content import FunnelStep
 
 logger = logging.getLogger(__name__)
 START_VIDEO_NOTE_FILE_ID = 'DQACAgIAAxkBAAIBhWnpmmxR5qu56BBGJNJ5MKZY-He_AAJTnQACK7YIS--c7EpIOUk5OwQ'
-START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfWnpmc4Tjkn9HGQqfqEW79jZPJ93AALbFmsbvUFJS1O2t6nwc_N8AQADAgADeQADOwQ'
-LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBfmnpmc6EzfmBYS-UDKZShxvpyRrvAALcFmsbvUFJSzmJ-N5TlpfJAQADAgADeQADOwQ'
+START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIIvBp7jVZ2AGsPb9jonQcWNI8kJF9XgACjxVrGyjacEs_q0vNjsSTagEAAwIAA3kAAzsE'
+LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIIvJp7jWcGDHZwJ1DdIGzE0f-w1TB4QAClhVrGyjacEslkBs-q8YAAXMBAAMCAAN5AAM7BA'
 LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ'
 LESSON_2_NUDGE_1_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFH8Ndp6uthRCOihuaFx6xBxr11nbsP2QACO50AAknbWUsrKtpGJFRdmDsE'
 LESSON_2_NUDGE_2_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFH-dZp63aThou9RLX9azZkF8ZRpLOFJQACuhNrG0nbYUu0rHr3VIdxjQEAAwIAA3gAAzsE'
@@ -84,6 +84,7 @@ class MessageService:
                 chat_id=chat_id,
                 text=fallback_text,
                 reply_markup=reply_markup,
+                parse_mode='HTML',
             )
 
     async def send_step(self, chat_id: int, step: FunnelStep, reply_markup: InlineKeyboardMarkup | None = None) -> None:
@@ -134,7 +135,7 @@ class MessageService:
                 LESSON_2_NUDGE_1_VIDEO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
 
     async def send_lesson_2_nudge_2_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
@@ -152,7 +153,7 @@ class MessageService:
                 LESSON_2_NUDGE_2_PHOTO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
 
     async def send_lesson_2_nudge_3_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
@@ -170,7 +171,7 @@ class MessageService:
                 LESSON_2_NUDGE_3_PHOTO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
 
     async def send_lesson_3_nudge_1_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
@@ -188,7 +189,7 @@ class MessageService:
                 LESSON_3_NUDGE_1_PHOTO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
 
     async def send_lesson_3_nudge_2_video(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
@@ -210,7 +211,7 @@ class MessageService:
                 LESSON_3_NUDGE_2_VIDEO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
 
     async def send_lesson_3_nudge_3_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
@@ -228,4 +229,4 @@ class MessageService:
                 LESSON_3_NUDGE_3_PHOTO_FILE_ID,
                 exc,
             )
-            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup)
+            await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
