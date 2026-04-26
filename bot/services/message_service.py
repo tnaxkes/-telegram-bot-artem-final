@@ -32,14 +32,23 @@ class MessageService:
     ) -> bool:
         if not photo_id:
             return False
-        await self.bot.send_photo(
-            chat_id=chat_id,
-            photo=photo_id,
-            caption=caption if caption else None,
-            reply_markup=reply_markup,
-            parse_mode='HTML' if caption else None,
-        )
-        return True
+        try:
+            await self.bot.send_photo(
+                chat_id=chat_id,
+                photo=photo_id,
+                caption=caption if caption else None,
+                reply_markup=reply_markup,
+                parse_mode='HTML' if caption else None,
+            )
+            return True
+        except Exception as exc:
+            logger.exception(
+                'Failed to send photo. chat_id=%s photo_file_id=%s error=%s',
+                chat_id,
+                photo_id,
+                exc,
+            )
+            return False
 
     async def send_start_media(
         self,
@@ -64,12 +73,18 @@ class MessageService:
                     exc,
                 )
 
-        await self._send_photo_by_id(
+        sent = await self._send_photo_by_id(
             chat_id=chat_id,
             photo_id=START_IMAGE_FILE_ID,
             caption=fallback_text,
             reply_markup=reply_markup,
         )
+        if not sent and fallback_text:
+            await self.bot.send_message(
+                chat_id=chat_id,
+                text=fallback_text,
+                reply_markup=reply_markup,
+            )
 
     async def send_step(self, chat_id: int, step: FunnelStep, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         text = step.body if not step.title else f'{step.title}\n\n{step.body}'
@@ -81,13 +96,14 @@ class MessageService:
         if step.metadata:
             image_file_id = image_file_id or step.metadata.get('image_file_id') or step.metadata.get('photo')
         if image_file_id:
-            await self._send_photo_by_id(
+            sent = await self._send_photo_by_id(
                 chat_id=chat_id,
                 photo_id=str(image_file_id),
                 caption=text if text else None,
                 reply_markup=reply_markup,
             )
-            return
+            if sent:
+                return
         await self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
     async def send_text(self, chat_id: int, text: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
