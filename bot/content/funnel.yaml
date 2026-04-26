@@ -130,7 +130,7 @@ steps:
       👇 выбери удобную платформу и досмотри до конца
     metadata:
       direct_links: true
-      image_file_id: AgACAgIAAxkBAAIBgWnpmc7MXz8knqtflpa2IpfgX9ADAALeFmsbvUFJS-nuRTJzi-z7AQADAgADeQADOwQ
+      image_file_id: AgACAgIAAxkBAAFIIyJp7jfBPQ46ycdpbNaomv6uTnJv_AACuxVrGyjacEuC836M3HAllwEAAwIAA3kAAzsE
     platforms:
       - label: YouTube
         platform: youtube
@@ -176,7 +176,7 @@ steps:
 
       если заполнил(а) анкету — пиши мне в лс (@yurow_work) слово «гайд» и мы с командой отправим тебе файл.
     metadata:
-      image_file_id: AgACAgIAAxkBAAIBgWnpmc7MXz8knqtflpa2IpfgX9ADAALeFmsbvUFJS-nuRTJzi-z7AQADAgADeQADOwQ
+      image_file_id: AgACAgIAAxkBAAFIIyVp7jfumUXOj5wiaoetx097RZHxpQACwRVrGyjacEuS9ydw1L3TYQEAAwIAA3kAAzsE
     cta_text: хочу зарабатывать
     cta_callback: open_application
 followup_texts:
