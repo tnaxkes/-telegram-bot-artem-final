@@ -13,6 +13,7 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 GOOGLE_SHEETS_SCOPE = ['https://www.googleapis.com/auth/spreadsheets']
+CHAT_ID_COLUMN = 'Client_id'
 
 
 class GoogleSheetsLeadService:
@@ -69,23 +70,23 @@ class GoogleSheetsLeadService:
         service = self._build_service()
         sheet_title = self._get_first_sheet_title(service)
         headers = self._get_header_row(service, sheet_title)
-        tg_name_index = self._ensure_tg_name_column(service, sheet_title, headers)
-        existing_values = self._get_column_values(service, sheet_title, tg_name_index)
+        chat_id_index = self._ensure_chat_id_column(service, sheet_title, headers)
+        existing_values = self._get_column_values(service, sheet_title, chat_id_index)
         chat_id_str = str(chat_id)
         if chat_id_str in existing_values:
-            logger.info('Lead with tg_name=%s already exists in Google Sheets', chat_id_str)
+            logger.info('Lead with %s=%s already exists in Google Sheets', CHAT_ID_COLUMN, chat_id_str)
             return False
 
-        row_values = [''] * (tg_name_index + 1)
-        row_values[tg_name_index] = chat_id_str
+        row_values = [''] * (chat_id_index + 1)
+        row_values[chat_id_index] = chat_id_str
         service.spreadsheets().values().append(
             spreadsheetId=self.settings.google_sheet_id,
-            range=f"'{sheet_title}'!A:{self._column_letter(tg_name_index)}",
+            range=f"'{sheet_title}'!A:{self._column_letter(chat_id_index)}",
             valueInputOption='RAW',
             insertDataOption='INSERT_ROWS',
             body={'values': [row_values]},
         ).execute()
-        logger.info('Saved lead with tg_name=%s to Google Sheets', chat_id_str)
+        logger.info('Saved lead with %s=%s to Google Sheets', CHAT_ID_COLUMN, chat_id_str)
         return True
 
     def _read_all_chat_ids_sync(self) -> list[int]:
@@ -97,26 +98,26 @@ class GoogleSheetsLeadService:
             return []
 
         headers = [str(value).strip() for value in rows[0]]
-        if 'tg_name' not in headers:
-            logger.warning('Column tg_name was not found in Google Sheets, lead broadcast is skipped')
+        if CHAT_ID_COLUMN not in headers:
+            logger.warning('Column %s was not found in Google Sheets, lead broadcast is skipped', CHAT_ID_COLUMN)
             return []
 
-        tg_name_index = headers.index('tg_name')
+        chat_id_index = headers.index(CHAT_ID_COLUMN)
         valid_chat_ids: list[int] = []
         seen_chat_ids: set[int] = set()
         for row_number, row in enumerate(rows[1:], start=2):
             raw_value = ''
-            if tg_name_index < len(row):
-                raw_value = str(row[tg_name_index]).strip()
+            if chat_id_index < len(row):
+                raw_value = str(row[chat_id_index]).strip()
             if not raw_value:
-                logger.warning('Skipping Google Sheets row %s: tg_name is empty', row_number)
+                logger.warning('Skipping Google Sheets row %s: %s is empty', row_number, CHAT_ID_COLUMN)
                 continue
             if not raw_value.isdigit():
-                logger.warning('Skipping Google Sheets row %s: tg_name=%r is not numeric', row_number, raw_value)
+                logger.warning('Skipping Google Sheets row %s: %s=%r is not numeric', row_number, CHAT_ID_COLUMN, raw_value)
                 continue
             chat_id = int(raw_value)
             if chat_id in seen_chat_ids:
-                logger.info('Skipping duplicate tg_name=%s from Google Sheets row %s', chat_id, row_number)
+                logger.info('Skipping duplicate %s=%s from Google Sheets row %s', CHAT_ID_COLUMN, chat_id, row_number)
                 continue
             seen_chat_ids.add(chat_id)
             valid_chat_ids.append(chat_id)
@@ -165,19 +166,19 @@ class GoogleSheetsLeadService:
             return []
         return [str(value).strip() for value in values[0]]
 
-    def _ensure_tg_name_column(self, service: Resource, sheet_title: str, headers: list[str]) -> int:
-        if 'tg_name' in headers:
-            return headers.index('tg_name')
+    def _ensure_chat_id_column(self, service: Resource, sheet_title: str, headers: list[str]) -> int:
+        if CHAT_ID_COLUMN in headers:
+            return headers.index(CHAT_ID_COLUMN)
 
         updated_headers = headers[:] if headers else []
-        updated_headers.append('tg_name')
+        updated_headers.append(CHAT_ID_COLUMN)
         service.spreadsheets().values().update(
             spreadsheetId=self.settings.google_sheet_id,
             range=f"'{sheet_title}'!1:1",
             valueInputOption='RAW',
             body={'values': [updated_headers]},
         ).execute()
-        logger.info('Column tg_name was added to Google Sheets header row')
+        logger.info('Column %s was added to Google Sheets header row', CHAT_ID_COLUMN)
         return len(updated_headers) - 1
 
     def _get_column_values(self, service: Resource, sheet_title: str, column_index: int) -> set[str]:
