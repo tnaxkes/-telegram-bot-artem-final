@@ -105,10 +105,10 @@ class LeadBroadcastService:
 
     def _get_message_for_hour(self, broadcast_hour: int) -> str:
         if broadcast_hour == 12:
-    return self.config.noon_message
+            return self.config.noon_message
 
-if broadcast_hour in (2, 18, 23):
-    return self.config.evening_message 
+        if broadcast_hour in (2, 18, 23):
+            return self.config.evening_message
 
         logger.warning('Lead broadcast was skipped: unsupported broadcast hour=%s', broadcast_hour)
         return ''
