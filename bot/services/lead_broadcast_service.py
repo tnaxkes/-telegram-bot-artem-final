@@ -16,7 +16,7 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 BROADCAST_TIMES = (
-    time(hour=12),
+    time(hour=1, minute=50),
     time(hour=23, minute=45),
 )
 
@@ -104,7 +104,7 @@ class LeadBroadcastService:
         )
 
     def _get_message_for_hour(self, broadcast_hour: int) -> str:
-        if broadcast_hour == 12:
+        if broadcast_hour == 1:
             return self.config.noon_message
 
         if broadcast_hour == 23:
