@@ -16,7 +16,7 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 BROADCAST_TIMES = (
-    time(hour=1, minute=50),
+    time(hour=1, minute=34),
     time(hour=23, minute=45),
 )
 
