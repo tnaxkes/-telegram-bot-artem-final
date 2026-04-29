@@ -8,12 +8,13 @@ from telegram.error import BadRequest, Forbidden, TelegramError
 from telegram.ext import Application, CallbackContext
 
 from bot.content.loader import get_lead_broadcast_config
+from bot.keyboards.builders import build_application_keyboard
 from bot.services.google_sheets_service import GoogleSheetsLeadService
 from config.settings import get_settings
 
 
 logger = logging.getLogger(__name__)
-BROADCAST_TIMES = (time(hour=12), time(hour=18))
+BROADCAST_TIMES = (time(hour=12), time(hour=20, minute=40))
 
 
 class LeadBroadcastService:
@@ -52,10 +53,11 @@ class LeadBroadcastService:
             logger.info('Lead broadcast was skipped: no valid chat_ids found in Google Sheets')
             return
 
+        reply_markup = build_application_keyboard('Заполнить анкету')
         sent_count = 0
         for chat_id in chat_ids:
             try:
-                await application.bot.send_message(chat_id=chat_id, text=message_text)
+                await application.bot.send_message(chat_id=chat_id, text=message_text, reply_markup=reply_markup)
                 sent_count += 1
             except (Forbidden, BadRequest) as exc:
                 logger.warning('Lead broadcast skipped for chat_id=%s: %s', chat_id, exc)
@@ -67,7 +69,7 @@ class LeadBroadcastService:
     def _get_message_for_hour(self, broadcast_hour: int) -> str:
         if broadcast_hour == 12:
             return self.config.noon_message
-        if broadcast_hour == 18:
+        if broadcast_hour == 20:
             return self.config.evening_message
         logger.warning('Lead broadcast was skipped: unsupported broadcast hour=%s', broadcast_hour)
         return ''
