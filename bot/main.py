@@ -19,18 +19,23 @@ logger = logging.getLogger(__name__)
 
 
 async def post_init(application: Application) -> None:
+    logger.info('post_init started')
     await init_db()
     await application.bot.set_my_commands([
         BotCommand('start', 'Запустить бота заново'),
         BotCommand('manager', 'Связь с менеджером'),
     ])
     application.bot_data['scheduled_task_callback'] = run_scheduled_task
+    logger.info('application.job_queue is %s', 'available' if application.job_queue is not None else 'missing')
     LeadBroadcastService().schedule_jobs(application)
+    if application.job_queue is not None:
+        logger.info('job_queue jobs after lead broadcast setup: %s', [job.name for job in application.job_queue.jobs()])
     async with AsyncSessionLocal() as session:
         scheduler = SchedulerService(TaskRepository(session), EventRepository(session))
         count = await scheduler.recover_pending_tasks(application)
         await session.commit()
         logger.info('Recovered %s pending local tasks', count)
+    logger.info('post_init finished')
 
 
 def run_bot() -> None:
@@ -38,6 +43,7 @@ def run_bot() -> None:
     settings = get_settings()
 
     application = Application.builder().token(settings.bot_token).post_init(post_init).build()
+    logger.info('Application built. job_queue is %s', 'available' if application.job_queue is not None else 'missing')
     application.add_handler(CommandHandler('start', start_command))
     application.add_handler(CommandHandler('manager', manager_command))
     application.add_handler(CommandHandler('stop', stop_command))
