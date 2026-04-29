@@ -14,7 +14,7 @@ from config.settings import get_settings
 
 
 logger = logging.getLogger(__name__)
-BROADCAST_TIMES = (time(hour=12), time(hour=20, minute=40))
+BROADCAST_TIMES = (time(hour=12), time(hour=21))
 
 
 class LeadBroadcastService:
