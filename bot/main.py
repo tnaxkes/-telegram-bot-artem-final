@@ -25,7 +25,6 @@ async def post_init(application: Application) -> None:
     await application.bot.set_my_commands([
         BotCommand('start', 'Запустить бота заново'),
         BotCommand('manager', 'Связь с менеджером'),
-        BotCommand('admin', 'Админ-панель'),
     ])
     application.bot_data['scheduled_task_callback'] = run_scheduled_task
     logger.info('application.job_queue is %s', 'available' if application.job_queue is not None else 'missing')
