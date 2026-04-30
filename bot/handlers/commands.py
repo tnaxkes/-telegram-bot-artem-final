@@ -16,11 +16,29 @@ from config.database import AsyncSessionLocal
 logger = logging.getLogger(__name__)
 
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.effective_user is None or update.effective_chat is None or update.message is None:
+async def _sync_google_sheet_chat_id(update: Update) -> None:
+    if update.effective_user is None or update.effective_chat is None:
         return
 
-    source = context.args[0] if context.args else None
+    google_sheets_service = GoogleSheetsLeadService()
+    try:
+        await google_sheets_service.sync_chat_id_by_username(
+            update.effective_user.username,
+            update.effective_chat.id,
+        )
+    except Exception:
+        logger.exception(
+            'Failed to sync Google Sheets chat_id by username. username=%s chat_id=%s',
+            update.effective_user.username,
+            update.effective_chat.id,
+        )
+
+
+async def run_start_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, source: str | None = None) -> None:
+    if update.effective_user is None or update.effective_chat is None:
+        return
+
+    await _sync_google_sheet_chat_id(update)
 
     async with AsyncSessionLocal() as session:
         user_repository = UserRepository(session)
@@ -43,19 +61,22 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await funnel_service.start_funnel(user, context.application)
         await session.commit()
 
-    google_sheets_service = GoogleSheetsLeadService()
-    try:
-        await google_sheets_service.ensure_chat_id_exists(update.effective_user.id)
-    except Exception:
-        logger.exception(
-            'Failed to save lead to Google Sheets. telegram_id=%s',
-            update.effective_user.id,
-        )
+
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.effective_user is None or update.effective_chat is None or update.message is None:
+        return
+
+    await _sync_google_sheet_chat_id(update)
+
+    source = context.args[0] if context.args else None
+    await run_start_flow(update, context, source)
 
 
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user is None or update.message is None:
         return
+
+    await _sync_google_sheet_chat_id(update)
 
     async with AsyncSessionLocal() as session:
         user_repository = UserRepository(session)
@@ -77,6 +98,8 @@ async def submit_application_command(update: Update, context: ContextTypes.DEFAU
     if update.effective_user is None or update.message is None:
         return
 
+    await _sync_google_sheet_chat_id(update)
+
     async with AsyncSessionLocal() as session:
         user_repository = UserRepository(session)
         event_repository = EventRepository(session)
@@ -95,4 +118,5 @@ async def submit_application_command(update: Update, context: ContextTypes.DEFAU
 async def manager_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None:
         return
+    await _sync_google_sheet_chat_id(update)
     await update.message.reply_text('Для связи с менеджером напиши: @yurow_work')

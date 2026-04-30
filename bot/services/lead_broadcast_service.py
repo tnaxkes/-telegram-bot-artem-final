@@ -8,7 +8,7 @@ from telegram.error import BadRequest, Forbidden, TelegramError
 from telegram.ext import Application, CallbackContext
 
 from bot.content.loader import get_lead_broadcast_config
-from bot.keyboards.builders import build_application_keyboard
+from bot.keyboards.builders import build_application_keyboard, build_restart_funnel_keyboard
 from bot.services.google_sheets_service import GoogleSheetsLeadService
 from config.settings import get_settings
 
@@ -17,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 BROADCAST_TIMES = (
     time(hour=12, minute=0),
+    time(hour=15, minute=0),
     time(hour=18, minute=0),
 )
 
 BROADCAST_TYPES = (
     'noon',
+    'restart',
     'evening',
 )
 
@@ -40,7 +42,7 @@ class LeadBroadcastService:
             logger.warning('Lead broadcast scheduler is disabled: %s', configuration_error)
             return
 
-        if not self.config.noon_message or not self.config.evening_message:
+        if not self.config.noon_message or not self.config.restart_message or not self.config.evening_message:
             logger.warning('Lead broadcast scheduler is disabled: no lead broadcast messages configured')
             return
 
@@ -65,9 +67,8 @@ class LeadBroadcastService:
             )
 
         logger.info(
-            'Scheduled lead broadcasts at %s and %s (%s)',
-            BROADCAST_TIMES[0],
-            BROADCAST_TIMES[1],
+            'Scheduled lead broadcasts at %s (%s)',
+            ', '.join(str(scheduled_time) for scheduled_time in BROADCAST_TIMES),
             self.settings.timezone,
         )
 
@@ -86,7 +87,10 @@ class LeadBroadcastService:
             logger.info('Lead broadcast was skipped: no valid chat_ids found in Google Sheets')
             return
 
-        reply_markup = build_application_keyboard('Заполнить анкету')
+        if broadcast_type == 'restart':
+            reply_markup = build_restart_funnel_keyboard('Не откладывай')
+        else:
+            reply_markup = build_application_keyboard('Заполнить анкету')
 
         sent_count = 0
         failed_count = 0
@@ -116,6 +120,9 @@ class LeadBroadcastService:
     def _get_message_by_type(self, broadcast_type: str) -> str:
         if broadcast_type == 'noon':
             return self.config.noon_message
+
+        if broadcast_type == 'restart':
+            return self.config.restart_message
 
         if broadcast_type == 'evening':
             return self.config.evening_message

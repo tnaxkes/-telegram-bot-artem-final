@@ -38,4 +38,5 @@ class FunnelConfig(BaseModel):
 
 class LeadBroadcastConfig(BaseModel):
     noon_message: str = ''
+    restart_message: str = ''
     evening_message: str = ''

@@ -38,3 +38,7 @@ def build_external_url_keyboard(label: str, url: str) -> InlineKeyboardMarkup:
 def build_application_keyboard(label: str = 'хочу зарабатывать') -> InlineKeyboardMarkup:
     settings = get_settings()
     return InlineKeyboardMarkup([[InlineKeyboardButton(label, url=settings.application_url)]])
+
+
+def build_restart_funnel_keyboard(label: str = 'Запустить заново') -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data='trigger_start')]])
