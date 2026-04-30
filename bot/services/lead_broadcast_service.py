@@ -16,8 +16,13 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 BROADCAST_TIMES = (
-    time(hour=2, minute=2),
+    time(hour=11, minute=8),
     time(hour=23, minute=45),
+)
+
+BROADCAST_TYPES = (
+    'noon',
+    'evening',
 )
 
 
@@ -45,14 +50,19 @@ class LeadBroadcastService:
 
         timezone = ZoneInfo(self.settings.timezone)
 
-        for scheduled_time in BROADCAST_TIMES:
+        for broadcast_type, scheduled_time in zip(BROADCAST_TYPES, BROADCAST_TIMES, strict=True):
             application.job_queue.run_daily(
                 callback=run_lead_broadcast,
                 time=scheduled_time.replace(tzinfo=timezone),
                 name=f'lead-broadcast-{scheduled_time.hour:02d}-{scheduled_time.minute:02d}',
-                data={'broadcast_hour': scheduled_time.hour},
+                data={'type': broadcast_type},
             )
-            logger.info('Lead broadcast job registered: %s (%s)', scheduled_time, self.settings.timezone)
+            logger.info(
+                'Lead broadcast job registered: type=%s time=%s (%s)',
+                broadcast_type,
+                scheduled_time,
+                self.settings.timezone,
+            )
 
         logger.info(
             'Scheduled lead broadcasts at %s and %s (%s)',
@@ -61,12 +71,12 @@ class LeadBroadcastService:
             self.settings.timezone,
         )
 
-    async def send_broadcast(self, application: Application, broadcast_hour: int) -> None:
-        logger.info('Lead broadcast started: hour=%s', broadcast_hour)
+    async def send_broadcast(self, application: Application, broadcast_type: str) -> None:
+        logger.info('Lead broadcast started: type=%s', broadcast_type)
 
-        message_text = self._get_message_for_hour(broadcast_hour)
+        message_text = self._get_message_by_type(broadcast_type)
         if not message_text:
-            logger.warning('Lead broadcast was skipped: no broadcast message for hour=%s', broadcast_hour)
+            logger.warning('Lead broadcast was skipped: no broadcast message for type=%s', broadcast_type)
             return
 
         chat_ids = await self.google_sheets_service.read_all_chat_ids()
@@ -103,18 +113,18 @@ class LeadBroadcastService:
             len(chat_ids),
         )
 
-    def _get_message_for_hour(self, broadcast_hour: int) -> str:
-        if broadcast_hour == 2:
+    def _get_message_by_type(self, broadcast_type: str) -> str:
+        if broadcast_type == 'noon':
             return self.config.noon_message
 
-        if broadcast_hour == 23:
+        if broadcast_type == 'evening':
             return self.config.evening_message
 
-        logger.warning('Lead broadcast was skipped: unsupported broadcast hour=%s', broadcast_hour)
+        logger.warning('Lead broadcast was skipped: unsupported broadcast type=%s', broadcast_type)
         return ''
 
 
 async def run_lead_broadcast(context: CallbackContext) -> None:
     service = LeadBroadcastService()
-    broadcast_hour = int(context.job.data.get('broadcast_hour', 0))
-    await service.send_broadcast(context.application, broadcast_hour) 
+    broadcast_type = str(context.job.data.get('type', ''))
+    await service.send_broadcast(context.application, broadcast_type)
