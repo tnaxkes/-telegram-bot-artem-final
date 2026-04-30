@@ -16,7 +16,7 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 BROADCAST_TIMES = (
-    time(hour=3, minute=13),
+    time(hour=2, minute=2),
     time(hour=23, minute=45),
 )
 
@@ -104,10 +104,10 @@ class LeadBroadcastService:
         )
 
     def _get_message_for_hour(self, broadcast_hour: int) -> str:
-        if broadcast_hour == 12:
+        if broadcast_hour == 2:
             return self.config.noon_message
 
-        if broadcast_hour in (2, 3, 18, 23):
+        if broadcast_hour == 23:
             return self.config.evening_message
 
         logger.warning('Lead broadcast was skipped: unsupported broadcast hour=%s', broadcast_hour)
