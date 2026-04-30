@@ -23,6 +23,7 @@ class Settings(BaseSettings):
         default='https://docs.google.com/forms/d/e/1FAIpQLSd5A2QdSvPImL0I5etX1JRAuOMq5y_ah_Go05gIclFQ6tOsQg/viewform',
         alias='APPLICATION_URL',
     )
+    admin_chat_id: int | None = Field(default=None, alias='ADMIN_CHAT_ID')
     admin_secret: str = Field(default='my-super-secret-admin-key-2026', alias='ADMIN_SECRET')
     log_level: str = Field(default='INFO', alias='LOG_LEVEL')
     google_sheet_id: str | None = Field(default=None, alias='GOOGLE_SHEET_ID')

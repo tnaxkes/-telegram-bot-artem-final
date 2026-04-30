@@ -1,9 +1,10 @@
 import logging
 
 from telegram import BotCommand
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 
 from bot.handlers.callbacks import callback_router
+from bot.handlers.admin_broadcast import admin_broadcast_message_handler, admin_panel_command
 from bot.handlers.commands import manager_command, start_command, stop_command, submit_application_command
 from bot.repositories.event_repository import EventRepository
 from bot.repositories.task_repository import TaskRepository
@@ -24,6 +25,7 @@ async def post_init(application: Application) -> None:
     await application.bot.set_my_commands([
         BotCommand('start', 'Запустить бота заново'),
         BotCommand('manager', 'Связь с менеджером'),
+        BotCommand('admin', 'Админ-панель'),
     ])
     application.bot_data['scheduled_task_callback'] = run_scheduled_task
     logger.info('application.job_queue is %s', 'available' if application.job_queue is not None else 'missing')
@@ -46,9 +48,11 @@ def run_bot() -> None:
     logger.info('Application built. job_queue is %s', 'available' if application.job_queue is not None else 'missing')
     application.add_handler(CommandHandler('start', start_command))
     application.add_handler(CommandHandler('manager', manager_command))
+    application.add_handler(CommandHandler('admin', admin_panel_command))
     application.add_handler(CommandHandler('stop', stop_command))
     application.add_handler(CommandHandler('submit_application', submit_application_command))
     application.add_handler(CallbackQueryHandler(callback_router))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin_broadcast_message_handler))
 
     logger.info('Starting Telegram bot polling in local mode')
     application.run_polling(drop_pending_updates=False)
