@@ -36,41 +36,8 @@ class LeadBroadcastService:
 
     def schedule_jobs(self, application: Application) -> None:
         logger.info('Lead broadcast scheduler init started')
-
-        configuration_error = self.google_sheets_service.get_configuration_error()
-        if configuration_error is not None:
-            logger.warning('Lead broadcast scheduler is disabled: %s', configuration_error)
-            return
-
-        if not self.config.noon_message or not self.config.restart_message or not self.config.evening_message:
-            logger.warning('Lead broadcast scheduler is disabled: no lead broadcast messages configured')
-            return
-
-        if application.job_queue is None:
-            logger.error('Lead broadcast scheduler is disabled: application.job_queue is None')
-            return
-
-        timezone = ZoneInfo(self.settings.timezone)
-
-        for broadcast_type, scheduled_time in zip(BROADCAST_TYPES, BROADCAST_TIMES, strict=True):
-            application.job_queue.run_daily(
-                callback=run_lead_broadcast,
-                time=scheduled_time.replace(tzinfo=timezone),
-                name=f'lead-broadcast-{scheduled_time.hour:02d}-{scheduled_time.minute:02d}',
-                data={'type': broadcast_type},
-            )
-            logger.info(
-                'Lead broadcast job registered: type=%s time=%s (%s)',
-                broadcast_type,
-                scheduled_time,
-                self.settings.timezone,
-            )
-
-        logger.info(
-            'Scheduled lead broadcasts at %s (%s)',
-            ', '.join(str(scheduled_time) for scheduled_time in BROADCAST_TIMES),
-            self.settings.timezone,
-        )
+        logger.info('Lead broadcast scheduler is disabled: daily broadcasts removed')
+        return
 
     async def send_broadcast(self, application: Application, broadcast_type: str) -> None:
         logger.info('Lead broadcast started: type=%s', broadcast_type)
