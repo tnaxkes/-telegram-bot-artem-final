@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -40,3 +41,11 @@ class LeadBroadcastConfig(BaseModel):
     noon_message: str = ''
     restart_message: str = ''
     evening_message: str = ''
+    campaign_posts: list['CampaignBroadcastPost'] = Field(default_factory=list)
+
+
+class CampaignBroadcastPost(BaseModel):
+    date: date
+    text: str
+    video_file_id: str
+    button_text: str = 'хочу так же'
