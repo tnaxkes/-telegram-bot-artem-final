@@ -14,7 +14,7 @@ from config.settings import get_settings
 
 
 logger = logging.getLogger(__name__)
-CAMPAIGN_RUN_TIME = time(hour=18, minute=0)
+CAMPAIGN_RUN_TIME = time(hour=19, minute=14)
 
 
 class LeadBroadcastService:
@@ -35,20 +35,37 @@ class LeadBroadcastService:
             return
 
         timezone = ZoneInfo(self.settings.timezone)
-        application.job_queue.run_daily(
-            callback=run_lead_broadcast,
-            time=CAMPAIGN_RUN_TIME.replace(tzinfo=timezone),
-            name='lead-broadcast-campaign-18-00',
-            data={'type': 'campaign'},
-        )
-        logger.info('Lead broadcast job registered: type=campaign time=%s (%s)', CAMPAIGN_RUN_TIME, self.settings.timezone)
+        now = datetime.now(timezone)
+        registered_posts = 0
 
-    async def send_broadcast(self, application: Application, broadcast_type: str) -> None:
-        logger.info('Lead broadcast started: type=%s', broadcast_type)
+        for campaign_post in self.config.campaign_posts:
+            scheduled_at = datetime.combine(campaign_post.date, CAMPAIGN_RUN_TIME, tzinfo=timezone)
+            if scheduled_at <= now:
+                logger.info('Lead broadcast campaign post skipped at startup: date=%s time=%s already passed', campaign_post.date, CAMPAIGN_RUN_TIME)
+                continue
 
-        campaign_post = self._get_campaign_post_for_today(broadcast_type)
+            application.job_queue.run_once(
+                callback=run_lead_broadcast,
+                when=scheduled_at,
+                name=f'lead-broadcast-campaign-{campaign_post.date.isoformat()}',
+                data={'campaign_date': campaign_post.date.isoformat()},
+            )
+            registered_posts += 1
+            logger.info(
+                'Lead broadcast job registered: campaign_date=%s time=%s (%s)',
+                campaign_post.date,
+                CAMPAIGN_RUN_TIME,
+                self.settings.timezone,
+            )
+
+        logger.info('Lead broadcast campaign jobs registered: %s', registered_posts)
+
+    async def send_broadcast(self, application: Application, campaign_date: str) -> None:
+        logger.info('Lead broadcast started: campaign_date=%s', campaign_date)
+
+        campaign_post = self._get_campaign_post_by_date(campaign_date)
         if campaign_post is None:
-            logger.info('Lead broadcast was skipped: no campaign post for today')
+            logger.info('Lead broadcast was skipped: no campaign post for date=%s', campaign_date)
             return
 
         chat_ids = await self.google_sheets_service.read_all_chat_ids()
@@ -90,19 +107,14 @@ class LeadBroadcastService:
             len(chat_ids),
         )
 
-    def _get_campaign_post_for_today(self, broadcast_type: str):
-        if broadcast_type != 'campaign':
-            logger.warning('Lead broadcast was skipped: unsupported broadcast type=%s', broadcast_type)
-            return None
-
-        current_date = datetime.now(ZoneInfo(self.settings.timezone)).date()
+    def _get_campaign_post_by_date(self, campaign_date: str):
         for campaign_post in self.config.campaign_posts:
-            if campaign_post.date == current_date:
+            if campaign_post.date.isoformat() == campaign_date:
                 return campaign_post
         return None
 
 
 async def run_lead_broadcast(context: CallbackContext) -> None:
     service = LeadBroadcastService()
-    broadcast_type = str(context.job.data.get('type', ''))
-    await service.send_broadcast(context.application, broadcast_type)
+    campaign_date = str(context.job.data.get('campaign_date', ''))
+    await service.send_broadcast(context.application, campaign_date)
