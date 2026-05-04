@@ -14,7 +14,7 @@ from config.settings import get_settings
 
 
 logger = logging.getLogger(__name__)
-CAMPAIGN_RUN_TIME = time(hour=19, minute=14)
+CAMPAIGN_RUN_TIME = time(hour=19, minute=29)
 
 
 class LeadBroadcastService:
