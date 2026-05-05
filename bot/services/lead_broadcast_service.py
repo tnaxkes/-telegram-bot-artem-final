@@ -27,10 +27,6 @@ class LeadBroadcastService:
     def schedule_jobs(self, application: Application) -> None:
         logger.info('Lead broadcast scheduler init started')
 
-        if not self.config.campaign_posts:
-            logger.warning('Lead broadcast scheduler is disabled: no campaign posts configured')
-            return
-
         if application.job_queue is None:
             logger.error('Lead broadcast scheduler is disabled: application.job_queue is None')
             return
