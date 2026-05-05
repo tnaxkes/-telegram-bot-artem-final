@@ -15,7 +15,7 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 CAMPAIGN_RUN_TIME = time(hour=19, minute=29)
-DAILY_BROADCAST_TIME = time(hour=5, minute=22)
+DAILY_BROADCAST_TIME = time(hour=18, minute=0)
 
 
 class LeadBroadcastService:
@@ -136,11 +136,23 @@ class LeadBroadcastService:
 
         for chat_id in chat_ids:
             try:
-                await application.bot.send_message(
-                    chat_id=chat_id,
-                    text=post.text,
-                    reply_markup=reply_markup,
-                )
+                if post.video_file_id:
+                    await application.bot.send_video(
+                        chat_id=chat_id,
+                        video=post.video_file_id,
+                        caption=post.text,
+                        reply_markup=reply_markup,
+                        write_timeout=8,
+                        read_timeout=12,
+                        connect_timeout=6,
+                        pool_timeout=6,
+                    )
+                else:
+                    await application.bot.send_message(
+                        chat_id=chat_id,
+                        text=post.text,
+                        reply_markup=reply_markup,
+                    )
                 sent_count += 1
             except (Forbidden, BadRequest) as exc:
                 failed_count += 1

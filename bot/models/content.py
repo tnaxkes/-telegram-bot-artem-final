@@ -55,3 +55,4 @@ class CampaignBroadcastPost(BaseModel):
 class DailyBroadcastPost(BaseModel):
     text: str
     button_text: str = 'хочу так же'
+    video_file_id: str | None = None
