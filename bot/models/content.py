@@ -42,10 +42,16 @@ class LeadBroadcastConfig(BaseModel):
     restart_message: str = ''
     evening_message: str = ''
     campaign_posts: list['CampaignBroadcastPost'] = Field(default_factory=list)
+    daily_posts: list['DailyBroadcastPost'] = Field(default_factory=list)
 
 
 class CampaignBroadcastPost(BaseModel):
     date: date
     text: str
     video_file_id: str
+    button_text: str = 'хочу так же'
+
+
+class DailyBroadcastPost(BaseModel):
+    text: str
     button_text: str = 'хочу так же'

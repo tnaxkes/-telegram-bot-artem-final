@@ -15,6 +15,7 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 CAMPAIGN_RUN_TIME = time(hour=19, minute=29)
+DAILY_BROADCAST_TIME = time(hour=5, minute=13)
 
 
 class LeadBroadcastService:
@@ -59,6 +60,14 @@ class LeadBroadcastService:
             )
 
         logger.info('Lead broadcast campaign jobs registered: %s', registered_posts)
+
+        if self.config.daily_posts:
+            application.job_queue.run_daily(
+                callback=run_daily_broadcast,
+                time=DAILY_BROADCAST_TIME.replace(tzinfo=timezone),
+                name='daily-broadcast',
+            )
+            logger.info('Daily broadcast job registered: time=%s (%s)', DAILY_BROADCAST_TIME, self.settings.timezone)
 
     async def send_broadcast(self, application: Application, campaign_date: str) -> None:
         logger.info('Lead broadcast started: campaign_date=%s', campaign_date)
@@ -113,8 +122,46 @@ class LeadBroadcastService:
                 return campaign_post
         return None
 
+    async def send_daily_broadcast(self, application: Application) -> None:
+        if not self.config.daily_posts:
+            return
+
+        timezone = ZoneInfo(self.settings.timezone)
+        today = datetime.now(timezone).date()
+        post_index = today.toordinal() % len(self.config.daily_posts)
+        post = self.config.daily_posts[post_index]
+
+        chat_ids = await self.google_sheets_service.read_all_chat_ids()
+        logger.info('Daily broadcast started: post_index=%s total_leads=%s', post_index, len(chat_ids))
+
+        reply_markup = build_application_keyboard(post.button_text)
+        sent_count = 0
+        failed_count = 0
+
+        for chat_id in chat_ids:
+            try:
+                await application.bot.send_message(
+                    chat_id=chat_id,
+                    text=post.text,
+                    reply_markup=reply_markup,
+                )
+                sent_count += 1
+            except (Forbidden, BadRequest) as exc:
+                failed_count += 1
+                logger.warning('Daily broadcast skipped for chat_id=%s: %s', chat_id, exc)
+            except TelegramError as exc:
+                failed_count += 1
+                logger.exception('Daily broadcast failed for chat_id=%s: %s', chat_id, exc)
+
+        logger.info('Daily broadcast finished: sent=%s failed=%s total=%s', sent_count, failed_count, len(chat_ids))
+
 
 async def run_lead_broadcast(context: CallbackContext) -> None:
     service = LeadBroadcastService()
     campaign_date = str(context.job.data.get('campaign_date', ''))
     await service.send_broadcast(context.application, campaign_date)
+
+
+async def run_daily_broadcast(context: CallbackContext) -> None:
+    service = LeadBroadcastService()
+    await service.send_daily_broadcast(context.application)
