@@ -12,7 +12,7 @@ START_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIx89p-PRYgvsrxMmQrA75AwHKMFQCeAACjBdrGwqVy
 LESSON_1_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIx8Np-PP7nof9G5G80fUl4Rz8YjSxwAACiRdrGwqVyUtmVV6JjymF_QEAAwIAA3kAAzsE'
 LESSON_SHARED_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIIvJp7jWcGDHZwJ1DdIGzE0f-w1TB4QAClhVrGyjacEslkBs-q8YAAXMBAAMCAAN5AAM7BA'
 LESSON_3_IMAGE_FILE_ID = 'AgACAgIAAxkBAAFIIyJp7jfBPQ46ycdpbNaomv6uTnJv_AACuxVrGyjacEuC836M3HAllwEAAwIAA3kAAzsE'
-LESSON_2_NUDGE_1_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFIx8Np-PP7nof9G5G80fUl4Rz8YjSxwAACiRdrGwqVyUtmVV6JjymF_QEAAwIAA3kAAzsE'
+LESSON_2_NUDGE_1_VIDEO_FILE_ID = 'BAACAgIAAxkBAAFIIwtp7jcS9bL4fqPDOMmd8CpdMoi3VgACqKQAAijacEvJ4KQQk1h2fTsE'
 LESSON_2_NUDGE_2_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFIIypp7jg1VP1Zd_ziPsWhsuqLrXuXNQACwxVrGyjacEsCLXd5J7eNnQEAAwIAA3gAAzsE'
 LESSON_2_NUDGE_3_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFIIzVp7jh-Lfe8dXbZ0gKR2xKTgRVnOAACxBVrGyjacEvCTFYRLbAt1QEAAwIAA3kAAzsE'
 LESSON_3_NUDGE_1_PHOTO_FILE_ID = 'AgACAgIAAxkBAAFIIzpp7jjl290SKabSQ3Yr4opkxNJtggACxxVrGyjacEvRlryBmJoZjwEAAwIAA3kAAzsE'
@@ -91,10 +91,8 @@ class MessageService:
     async def send_step(self, chat_id: int, step: FunnelStep, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         text = step.body if not step.title else f'{step.title}\n\n{step.body}'
         image_file_id = None
-        if step.code == 'lesson_1':
+        if step.code in {'lesson_1', 'lesson_2'}:
             image_file_id = LESSON_1_IMAGE_FILE_ID
-        elif step.code == 'lesson_2':
-            image_file_id = LESSON_SHARED_IMAGE_FILE_ID
         elif step.code == 'lesson_3':
             image_file_id = LESSON_3_IMAGE_FILE_ID
         if step.metadata:
@@ -118,20 +116,24 @@ class MessageService:
             parse_mode='HTML',
         )
 
-    async def send_lesson_2_nudge_1_photo(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
+    async def send_lesson_2_nudge_1_video(self, chat_id: int, caption: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
         try:
-            await self.bot.send_photo(
+            await self.bot.send_video(
                 chat_id=chat_id,
-                photo=LESSON_2_NUDGE_1_PHOTO_FILE_ID,
+                video=LESSON_2_NUDGE_1_VIDEO_FILE_ID,
                 caption=caption,
                 reply_markup=reply_markup,
                 parse_mode='HTML',
+                write_timeout=8,
+                read_timeout=12,
+                connect_timeout=6,
+                pool_timeout=6,
             )
         except Exception as exc:
             logger.exception(
-                'Failed to send lesson_2_nudge_1 photo. chat_id=%s photo_file_id=%s error=%s',
+                'Failed to send lesson_2_nudge_1 video. chat_id=%s video_file_id=%s error=%s',
                 chat_id,
-                LESSON_2_NUDGE_1_PHOTO_FILE_ID,
+                LESSON_2_NUDGE_1_VIDEO_FILE_ID,
                 exc,
             )
             await self.bot.send_message(chat_id=chat_id, text=caption, reply_markup=reply_markup, parse_mode='HTML')
