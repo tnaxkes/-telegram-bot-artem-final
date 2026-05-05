@@ -51,7 +51,7 @@ evening_message: |
 
   мы смотрим твою ситуацию, где ты сейчас и что мешает двигаться дальше — и после этого становится понятно, что делать
 daily_posts:
-  - button_text: хочу так же
+  - button_text: хочу также
     video_file_id: BAACAgIAAxkBAAFIzbxp-Vce3OTGldxNhb34hqUegSPyLgACXqEAAgqVyUs6bg746_M8kzsE
     text: |
       парень пришёл вообще с нуля
@@ -71,7 +71,7 @@ daily_posts:
       а кто-то просто берёт и идёт по шагам
 
       если тебе это откликается
-  - button_text: хочу так же
+  - button_text: хочу также
     video_file_id: BAACAgIAAxkBAAFIzbBp-VVPjadUOUP2vKaf4bJV5Ly88QACWaEAAgqVyUuibFdmCIfgrDsE
     text: |
       Артур пришёл уже с каким-то опытом
@@ -99,7 +99,7 @@ daily_posts:
 
       если ты сейчас тоже где-то топчешься
       или не понимаешь, как выйти на следующий уровень
-  - button_text: хочу так же
+  - button_text: хочу также
     video_file_id: BAACAgIAAxkBAAFIzcFp-Vd9RtfQcTZ6CKMnuCcH48tEIQACX6EAAgqVyUt4s0MK4UA8BjsE
     text: |
       парню 17 лет
@@ -132,7 +132,7 @@ daily_posts:
 
       если ты сейчас тоже думаешь
       "а получится ли у меня"
-  - button_text: хочу так же
+  - button_text: хочу также
     video_file_id: BAACAgIAAxkBAAFIzcVp-Ve-1LCkbZ0oD5Bi0kdFLNDTXwACYaEAAgqVyUv9j0f5R8Y5sTsE
     text: |
       Кирилл
