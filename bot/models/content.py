@@ -48,8 +48,10 @@ class LeadBroadcastConfig(BaseModel):
 class CampaignBroadcastPost(BaseModel):
     date: date
     text: str
-    video_file_id: str
+    video_file_id: str | None = None
+    photo_file_id: str | None = None
     button_text: str = 'хочу так же'
+    run_time: str | None = None
 
 
 class DailyBroadcastPost(BaseModel):

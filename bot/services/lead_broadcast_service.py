@@ -36,9 +36,14 @@ class LeadBroadcastService:
         registered_posts = 0
 
         for campaign_post in self.config.campaign_posts:
-            scheduled_at = datetime.combine(campaign_post.date, CAMPAIGN_RUN_TIME, tzinfo=timezone)
+            if campaign_post.run_time:
+                h, m = map(int, campaign_post.run_time.split(':'))
+                post_time = time(hour=h, minute=m)
+            else:
+                post_time = CAMPAIGN_RUN_TIME
+            scheduled_at = datetime.combine(campaign_post.date, post_time, tzinfo=timezone)
             if scheduled_at <= now:
-                logger.info('Lead broadcast campaign post skipped at startup: date=%s time=%s already passed', campaign_post.date, CAMPAIGN_RUN_TIME)
+                logger.info('Lead broadcast campaign post skipped at startup: date=%s time=%s already passed', campaign_post.date, post_time)
                 continue
 
             application.job_queue.run_once(
@@ -51,7 +56,7 @@ class LeadBroadcastService:
             logger.info(
                 'Lead broadcast job registered: campaign_date=%s time=%s (%s)',
                 campaign_post.date,
-                CAMPAIGN_RUN_TIME,
+                post_time,
                 self.settings.timezone,
             )
 
@@ -87,16 +92,24 @@ class LeadBroadcastService:
 
         for chat_id in chat_ids:
             try:
-                await application.bot.send_video(
-                    chat_id=chat_id,
-                    video=campaign_post.video_file_id,
-                    caption=campaign_post.text,
-                    reply_markup=reply_markup,
-                    write_timeout=8,
-                    read_timeout=12,
-                    connect_timeout=6,
-                    pool_timeout=6,
-                )
+                if campaign_post.photo_file_id:
+                    await application.bot.send_photo(
+                        chat_id=chat_id,
+                        photo=campaign_post.photo_file_id,
+                        caption=campaign_post.text,
+                        reply_markup=reply_markup,
+                    )
+                else:
+                    await application.bot.send_video(
+                        chat_id=chat_id,
+                        video=campaign_post.video_file_id,
+                        caption=campaign_post.text,
+                        reply_markup=reply_markup,
+                        write_timeout=8,
+                        read_timeout=12,
+                        connect_timeout=6,
+                        pool_timeout=6,
+                    )
                 sent_count += 1
             except (Forbidden, BadRequest) as exc:
                 failed_count += 1
