@@ -87,6 +87,7 @@ steps:
       интенсив может скоро удалиться,
       не откладывай просмотр
     metadata:
+      direct_links: true
       image_file_id: AgACAgIAAxkBAAIBgGnpmc7xwKjsR84n7rqm_DMFEEgfAALdFmsbvUFJS9xc93RZjdQIAQADAgADeQADOwQ
     platforms:
       - label: YouTube
