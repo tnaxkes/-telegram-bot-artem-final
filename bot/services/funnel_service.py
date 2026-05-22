@@ -9,7 +9,6 @@ from bot.keyboards.builders import (
     build_external_url_keyboard,
     build_next_lesson_keyboard,
     build_platform_keyboard,
-    build_start_keyboard,
 )
 from bot.models.db import User
 from bot.models.enums import EventType, TaskType, UserStatus
@@ -43,7 +42,6 @@ class FunnelService:
             chat_id=user.telegram_id,
             file_id=self.funnel.start_video_file_id,
             fallback_text=start_text,
-            reply_markup=build_start_keyboard(step),
         )
 
     async def start_funnel(self, user: User, application: Application | None = None) -> None:
