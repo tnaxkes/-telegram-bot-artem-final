@@ -50,7 +50,7 @@ class CampaignBroadcastPost(BaseModel):
     text: str
     video_file_id: str | None = None
     photo_file_id: str | None = None
-    button_text: str = 'хочу так же'
+    button_text: str | None = 'хочу так же'
     run_time: str | None = None
 
 

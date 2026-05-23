@@ -85,7 +85,7 @@ class LeadBroadcastService:
             logger.info('Lead broadcast was skipped: no valid chat_ids found in Google Sheets')
             return
 
-        reply_markup = build_application_keyboard(campaign_post.button_text)
+        reply_markup = build_application_keyboard(campaign_post.button_text) if campaign_post.button_text else None
 
         sent_count = 0
         failed_count = 0
@@ -99,7 +99,7 @@ class LeadBroadcastService:
                         caption=campaign_post.text,
                         reply_markup=reply_markup,
                     )
-                else:
+                elif campaign_post.video_file_id:
                     await application.bot.send_video(
                         chat_id=chat_id,
                         video=campaign_post.video_file_id,
@@ -109,6 +109,12 @@ class LeadBroadcastService:
                         read_timeout=12,
                         connect_timeout=6,
                         pool_timeout=6,
+                    )
+                else:
+                    await application.bot.send_message(
+                        chat_id=chat_id,
+                        text=campaign_post.text,
+                        reply_markup=reply_markup,
                     )
                 sent_count += 1
             except (Forbidden, BadRequest) as exc:
