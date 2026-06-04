@@ -14,7 +14,7 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 GOOGLE_SHEETS_SCOPE = ['https://www.googleapis.com/auth/spreadsheets']
 CHAT_ID_COLUMN = 'chat_id'
-USERNAME_COLUMN = 'username'
+USERNAME_COLUMN = 'tg_name'
 
 
 class GoogleSheetsLeadService:
