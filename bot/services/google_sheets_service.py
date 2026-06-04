@@ -14,6 +14,7 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 GOOGLE_SHEETS_SCOPE = ['https://www.googleapis.com/auth/spreadsheets']
 CHAT_ID_COLUMN = 'chat_id'
+USERNAME_COLUMN = 'username'
 
 
 class GoogleSheetsLeadService:
@@ -37,6 +38,22 @@ class GoogleSheetsLeadService:
             return await asyncio.to_thread(self._ensure_chat_id_exists_sync, chat_id)
         except Exception:
             logger.exception('Failed to save tg_name=%s to Google Sheets', chat_id)
+            return False
+
+    async def sync_chat_id_by_username(self, username: str | None, chat_id: int) -> bool:
+        if not username:
+            logger.info('User has no username, skipped. chat_id=%s', chat_id)
+            return False
+
+        configuration_error = self.get_configuration_error()
+        if configuration_error is not None:
+            logger.warning('Google Sheets username sync is disabled: %s', configuration_error)
+            return False
+
+        try:
+            return await asyncio.to_thread(self._sync_chat_id_by_username_sync, username, chat_id)
+        except Exception:
+            logger.exception('Failed to sync chat_id by username=%s chat_id=%s', username, chat_id)
             return False
 
     async def read_all_chat_ids(self) -> list[int]:
@@ -123,6 +140,52 @@ class GoogleSheetsLeadService:
             valid_chat_ids.append(chat_id)
         return valid_chat_ids
 
+    def _sync_chat_id_by_username_sync(self, username: str, chat_id: int) -> bool:
+        service = self._build_service()
+        sheet_title = self._get_first_sheet_title(service)
+        headers = self._get_header_row(service, sheet_title)
+        username_index = self._ensure_column(service, sheet_title, headers, USERNAME_COLUMN)
+        if len(headers) <= username_index:
+            headers = self._get_header_row(service, sheet_title)
+        chat_id_index = self._ensure_column(service, sheet_title, headers, CHAT_ID_COLUMN)
+        rows = self._get_all_rows(service, sheet_title)
+
+        normalized_target_username = self._normalize_username(username)
+        chat_id_str = str(chat_id)
+
+        for row_number, row in enumerate(rows[1:], start=2):
+            raw_username = ''
+            if username_index < len(row):
+                raw_username = str(row[username_index]).strip()
+            if self._normalize_username(raw_username) != normalized_target_username:
+                continue
+
+            updated_row = list(row)
+            if len(updated_row) <= chat_id_index:
+                updated_row.extend([''] * (chat_id_index + 1 - len(updated_row)))
+            updated_row[chat_id_index] = chat_id_str
+            service.spreadsheets().values().update(
+                spreadsheetId=self.settings.google_sheet_id,
+                range=f"'{sheet_title}'!A{row_number}:{self._column_letter(len(updated_row) - 1)}{row_number}",
+                valueInputOption='RAW',
+                body={'values': [updated_row]},
+            ).execute()
+            logger.info('Found username row, updated chat_id. username=%s chat_id=%s row=%s', username, chat_id, row_number)
+            return True
+
+        row_values = [''] * (max(username_index, chat_id_index) + 1)
+        row_values[username_index] = username
+        row_values[chat_id_index] = chat_id_str
+        service.spreadsheets().values().append(
+            spreadsheetId=self.settings.google_sheet_id,
+            range=f"'{sheet_title}'!A:{self._column_letter(len(row_values) - 1)}",
+            valueInputOption='RAW',
+            insertDataOption='INSERT_ROWS',
+            body={'values': [row_values]},
+        ).execute()
+        logger.info('Username not found, created new row. username=%s chat_id=%s', username, chat_id)
+        return True
+
     def _build_service(self) -> Resource:
         service_account_info = self._parse_service_account_info()
         credentials = Credentials.from_service_account_info(service_account_info, scopes=GOOGLE_SHEETS_SCOPE)
@@ -167,18 +230,21 @@ class GoogleSheetsLeadService:
         return [str(value).strip() for value in values[0]]
 
     def _ensure_chat_id_column(self, service: Resource, sheet_title: str, headers: list[str]) -> int:
-        if CHAT_ID_COLUMN in headers:
-            return headers.index(CHAT_ID_COLUMN)
+        return self._ensure_column(service, sheet_title, headers, CHAT_ID_COLUMN)
+
+    def _ensure_column(self, service: Resource, sheet_title: str, headers: list[str], column_name: str) -> int:
+        if column_name in headers:
+            return headers.index(column_name)
 
         updated_headers = headers[:] if headers else []
-        updated_headers.append(CHAT_ID_COLUMN)
+        updated_headers.append(column_name)
         service.spreadsheets().values().update(
             spreadsheetId=self.settings.google_sheet_id,
             range=f"'{sheet_title}'!1:1",
             valueInputOption='RAW',
             body={'values': [updated_headers]},
         ).execute()
-        logger.info('Column %s was added to Google Sheets header row', CHAT_ID_COLUMN)
+        logger.info('Column %s was added to Google Sheets header row', column_name)
         return len(updated_headers) - 1
 
     def _get_column_values(self, service: Resource, sheet_title: str, column_index: int) -> set[str]:
@@ -196,6 +262,12 @@ class GoogleSheetsLeadService:
             range=f"'{sheet_title}'",
         ).execute()
         return response.get('values', [])
+
+    @staticmethod
+    def _normalize_username(username: str | None) -> str:
+        if not username:
+            return ''
+        return str(username).strip().lstrip('@').lower()
 
     @staticmethod
     def _column_letter(column_index: int) -> str:

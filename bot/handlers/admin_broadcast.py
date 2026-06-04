@@ -6,6 +6,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.error import BadRequest, Forbidden, TelegramError
 from telegram.ext import ContextTypes
 
+from bot.keyboards.builders import build_restart_funnel_keyboard
 from bot.services.google_sheets_service import GoogleSheetsLeadService
 from config.settings import get_settings
 
@@ -44,6 +45,20 @@ async def admin_broadcast_message_handler(update: Update, context: ContextTypes.
     if update.message is None or update.message.text is None or not _is_admin(update):
         return
 
+    if update.effective_user is not None and update.effective_chat is not None:
+        google_sheets_service = GoogleSheetsLeadService()
+        try:
+            await google_sheets_service.sync_chat_id_by_username(
+                update.effective_user.username,
+                update.effective_chat.id,
+            )
+        except Exception:
+            logger.exception(
+                'Failed to sync Google Sheets chat_id by username from admin message. username=%s chat_id=%s',
+                update.effective_user.username,
+                update.effective_chat.id,
+            )
+
     message_text = update.message.text.strip()
 
     if message_text == BROADCAST_BUTTON_TEXT:
@@ -72,10 +87,11 @@ async def _send_manual_broadcast(context: ContextTypes.DEFAULT_TYPE, message_tex
 
     sent_count = 0
     failed_count = 0
+    reply_markup = build_restart_funnel_keyboard('Запустить')
 
     for chat_id in chat_ids:
         try:
-            await context.bot.send_message(chat_id=chat_id, text=message_text)
+            await context.bot.send_message(chat_id=chat_id, text=message_text, reply_markup=reply_markup)
             sent_count += 1
         except (Forbidden, BadRequest) as exc:
             failed_count += 1
