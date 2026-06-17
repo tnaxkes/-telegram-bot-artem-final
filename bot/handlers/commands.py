@@ -25,6 +25,7 @@ async def _sync_google_sheet_chat_id(update: Update) -> None:
         await google_sheets_service.sync_chat_id_by_username(
             update.effective_user.username,
             update.effective_chat.id,
+            update.effective_user.first_name,
         )
     except Exception:
         logger.exception(

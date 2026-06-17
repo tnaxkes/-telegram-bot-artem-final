@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from datetime import datetime
 from typing import Any
 
 from google.oauth2.service_account import Credentials
@@ -40,7 +41,7 @@ class GoogleSheetsLeadService:
             logger.exception('Failed to save tg_name=%s to Google Sheets', chat_id)
             return False
 
-    async def sync_chat_id_by_username(self, username: str | None, chat_id: int) -> bool:
+    async def sync_chat_id_by_username(self, username: str | None, chat_id: int, first_name: str | None = None) -> bool:
         if not username:
             logger.info('User has no username, skipped. chat_id=%s', chat_id)
             return False
@@ -51,7 +52,7 @@ class GoogleSheetsLeadService:
             return False
 
         try:
-            return await asyncio.to_thread(self._sync_chat_id_by_username_sync, username, chat_id)
+            return await asyncio.to_thread(self._sync_chat_id_by_username_sync, username, chat_id, first_name)
         except Exception:
             logger.exception('Failed to sync chat_id by username=%s chat_id=%s', username, chat_id)
             return False
@@ -140,7 +141,7 @@ class GoogleSheetsLeadService:
             valid_chat_ids.append(chat_id)
         return valid_chat_ids
 
-    def _sync_chat_id_by_username_sync(self, username: str, chat_id: int) -> bool:
+    def _sync_chat_id_by_username_sync(self, username: str, chat_id: int, first_name: str | None = None) -> bool:
         service = self._build_service()
         sheet_title = self._get_first_sheet_title(service)
         headers = self._get_header_row(service, sheet_title)
@@ -173,12 +174,22 @@ class GoogleSheetsLeadService:
             logger.info('Found username row, updated chat_id. username=%s chat_id=%s row=%s', username, chat_id, row_number)
             return True
 
-        row_values = [''] * (max(username_index, chat_id_index) + 1)
+        headers = self._get_header_row(service, sheet_title)
+        date_index = headers.index('ан') if 'ан' in headers else None
+        name_index = headers.index('Имя') if 'Имя' in headers else None
+
+        max_index = max(i for i in [date_index, name_index, username_index, chat_id_index] if i is not None)
+        row_values = [''] * (max_index + 1)
+        if date_index is not None:
+            row_values[date_index] = datetime.now().strftime('%d.%m.%Y')
+        if name_index is not None:
+            row_values[name_index] = first_name or ''
         row_values[username_index] = username
         row_values[chat_id_index] = chat_id_str
+
         service.spreadsheets().values().append(
             spreadsheetId=self.settings.google_sheet_id,
-            range=f"'{sheet_title}'!A:{self._column_letter(len(row_values) - 1)}",
+            range=f"'{sheet_title}'!A:{self._column_letter(max_index)}",
             valueInputOption='RAW',
             insertDataOption='INSERT_ROWS',
             body={'values': [row_values]},
